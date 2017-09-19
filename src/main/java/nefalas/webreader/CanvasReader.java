@@ -1,9 +1,8 @@
 package nefalas.webreader;
 
 import com.gargoylesoftware.htmlunit.html.*;
-import nefalas.kthplanner.courses.Course;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
+import nefalas.kthplanner.courses.CanvasCourse;
+import nefalas.kthplanner.groups.CanvasGroup;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,12 +44,12 @@ public class CanvasReader extends WebReader {
         }
     }
 
-    public List<Course> getCurrentCourses() {
+    public List<CanvasCourse> getCurrentCourses() {
         HtmlPage page;
         try {
             page = webClient.getPage("https://kth.instructure.com/courses");
         } catch (Exception e) {
-            return stringifyError(e.getMessage());
+            return new ArrayList<>();
         }
         DomElement currentCourses = page.getElementById("my_courses_table")
                 .getElementsByTagName("tbody").get(0);
@@ -58,42 +57,50 @@ public class CanvasReader extends WebReader {
         return extractCourseInfo(currentCourses);
     }
 
-    public List<Course> getPastCourses() throws Exception {
-        HtmlPage page = webClient.getPage("https://kth.instructure.com/courses");
+    public List<CanvasCourse> getPastCourses() {
+        HtmlPage page;
+        try {
+            page = webClient.getPage("https://kth.instructure.com/courses");
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
         DomElement pastCourses = page.getElementById("past_enrollments_table")
                 .getElementsByTagName("tbody").get(0);
 
         return extractCourseInfo(pastCourses);
     }
 
-    public List<Course> getFutureCourses() throws Exception {
-        HtmlPage page = webClient.getPage("https://kth.instructure.com/courses");
+    public List<CanvasCourse> getFutureCourses() {
+        HtmlPage page;
+        try {
+            page = webClient.getPage("https://kth.instructure.com/courses");
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
         DomElement futureCourses = page.getElementById("future_enrollments_table");
 
         return extractCourseInfo(futureCourses);
     }
 
-    public JSONArray getGroups() throws Exception {
+    public List<CanvasGroup> getGroups() throws Exception {
         HtmlPage page = webClient.getPage("https://kth.instructure.com/courses");
         DomElement groups = page.getElementById("my_groups_table");
 
-        JSONArray out = new JSONArray();
+        ArrayList<CanvasGroup> output = new ArrayList<>();
         for (DomElement tr : groups.getElementsByTagName("tr")) {
             List<HtmlElement> elems = tr.getElementsByTagName("td");
             if (elems.size() > 0) {
                 String groupName = elems.get(0).asText();
                 String courseName = elems.get(1).asText();
-                JSONObject course = new JSONObject();
-                course.put("groupName", groupName);
-                course.put("courseName", courseName);
-                out.add(course);
+                CanvasGroup group = new CanvasGroup(groupName, courseName);
+                output.add(group);
             }
         }
-        return out;
+        return output;
     }
 
-    private List<Course> extractCourseInfo(DomElement courses) {
-        List<Course> output = new ArrayList<>();
+    private List<CanvasCourse> extractCourseInfo(DomElement courses) {
+        List<CanvasCourse> output = new ArrayList<>();
         for (DomElement tr : courses.getElementsByTagName("tr")) {
             List<HtmlElement> elems = tr.getElementsByTagName("td");
             if (elems.size() > 0) {
@@ -106,17 +113,12 @@ public class CanvasReader extends WebReader {
                             + elems.get(1).getElementsByTagName("a").get(0).getAttribute("href");
                 }
                 int code = (link == null)? 0 : Integer.parseInt(link.substring(link.lastIndexOf("/")+1));
-                Course course = new Course(name, published, selected, code);
+                CanvasCourse course = new CanvasCourse(name, published, selected, code);
                 output.add(course);
             }
         }
         return output;
     }
 
-    private JSONArray stringifyError(String error) {
-        JSONArray out = new JSONArray();
-        out.add(new JSONObject().put("error", error));
-        return out;
-    }
 }
 
