@@ -1,12 +1,14 @@
 package nefalas.kthplanner.login;
 
-import nefalas.webreader.CanvasReader;
+import nefalas.webreader.WebReader;
+import nefalas.webreader.sessionmanager.SessionManager;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class LoginController {
+
 
     @RequestMapping("/login")
     public Login login(
@@ -21,8 +23,8 @@ class Login {
 
     private boolean isLoggedIn;
 
-    public Login(String username, String password) {
-        isLoggedIn = new CanvasReader(username, password).login();
+    Login(String username, String password) {
+        isLoggedIn = SessionManager.getWebClientByUsername(username, password) != null;
     }
 
     public boolean isLoggedIn() {

@@ -11,13 +11,18 @@ public class CanvasReader extends WebReader {
 
     public CanvasReader(String username, String password) {
         super(username, password);
-        this.loginUrl = "https://kth.instructure.com/";
     }
 
+    /*
     @Override
     public boolean login() {
         try {
             final HtmlPage loginPage = webClient.getPage(loginUrl);
+
+            if (loginPage.asText().contains("Användarens översikt")) {
+                return true;
+            }
+
             final HtmlForm form = loginPage.getForms().get(0);
 
             final HtmlSubmitInput button = form.getInputByValue("Logga in");
@@ -43,6 +48,7 @@ public class CanvasReader extends WebReader {
             return false;
         }
     }
+    */
 
     public List<CanvasCourse> getCurrentCourses() {
         HtmlPage page;

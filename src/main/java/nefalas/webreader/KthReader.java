@@ -19,31 +19,6 @@ public class KthReader extends WebReader {
      */
     public KthReader(String username, String password) {
         super(username, password);
-        this.loginUrl = "https://login.kth.se/login";
-    }
-
-    /**
-     * Use this to login to the KTH website
-     * @return true if logged in
-     */
-    @Override
-    public boolean login() {
-        try {
-            final HtmlPage loginPage = webClient.getPage(loginUrl);
-            final HtmlForm form = loginPage.getForms().get(0);
-
-            final HtmlSubmitInput button = form.getInputByValue("Logga in");
-            final HtmlTextInput usernameField = form.getInputByName("username");
-            final HtmlPasswordInput passwordField = form.getInputByName("password");
-
-            usernameField.setValueAttribute(username);
-            passwordField.setValueAttribute(password);
-
-            final HtmlPage result = button.click();
-            return result.asText().contains("Du är inloggad");
-        } catch (java.io.IOException e) {
-            return false;
-        }
     }
 
     /**
