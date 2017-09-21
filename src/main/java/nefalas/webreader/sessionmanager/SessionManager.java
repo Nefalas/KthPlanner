@@ -2,6 +2,7 @@ package nefalas.webreader.sessionmanager;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.WebClient;
+import nefalas.gui.MainWindow;
 import nefalas.webreader.WebReader;
 
 import java.util.ArrayList;
@@ -26,6 +27,10 @@ public class SessionManager {
         return session.webClient;
     }
 
+    public static ArrayList<Session> getSessions() {
+        return sessions;
+    }
+
     private static Session getSessionByUsername(String username) {
         for (Session session : sessions) {
             if (session.username.equals(username)) {
@@ -37,7 +42,7 @@ public class SessionManager {
         return null;
     }
 
-    public static void updateSessionsAtRate(int delay) {
+    public static void updateSessionsAtRate(int rate, MainWindow mainWindow) {
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -52,16 +57,16 @@ public class SessionManager {
                 }
                 sessions.removeAll(toRemove);
                 System.out.println("-- Session update ended --\n");
+                mainWindow.resetProgressBar();
             }
-        }, delay, delay);
-
+        }, rate, rate);
     }
 
-    static class Session {
+    public static class Session {
 
-        String username;
+        public String username;
         private String password;
-        private Date lastUse;
+        public Date lastUse;
 
         WebClient webClient;
 
@@ -89,8 +94,11 @@ public class SessionManager {
             if (shouldBeDestroyed()) {
                 return false;
             }
-            System.out.println("    * Refreshing session for " + username);
-            return refreshSession();
+            if (shouldBeRefreshed()) {
+                System.out.println("    * Refreshing session for " + username);
+                return refreshSession();
+            }
+            return true;
         }
 
         private boolean refreshSession() {
